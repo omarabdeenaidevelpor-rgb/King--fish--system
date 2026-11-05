@@ -5,12 +5,12 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export type UserRole = 
-  | 'GENERAL_MANAGER' 
-  | 'RECEIVING_OPERATOR' 
-  | 'QUALITY_MANAGER' 
-  | 'PRODUCTION_SUPERVISOR' 
-  | 'WAREHOUSE_OPERATOR' 
+export type UserRole =
+  | 'GENERAL_MANAGER'
+  | 'RECEIVING_OPERATOR'
+  | 'QUALITY_MANAGER'
+  | 'PRODUCTION_SUPERVISOR'
+  | 'WAREHOUSE_OPERATOR'
   | 'EXPORT_OPERATOR';
 
 export interface User {

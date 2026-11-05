@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, doublePrecision, boolean, integer, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, doublePrecision, boolean, integer, pgEnum, unique } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Enums
@@ -25,6 +25,11 @@ export const organizations = pgTable('organizations', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
+  countryCode: text('country_code').default('EG').notNull(),
+  defaultCurrency: text('default_currency').default('EGP').notNull(),
+  defaultLocale: text('default_locale').default('ar').notNull(),
+  defaultTimeZone: text('default_time_zone').default('Africa/Cairo').notNull(),
+  fiscalYearStartMonth: integer('fiscal_year_start_month').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -34,15 +39,40 @@ export const branches = pgTable('branches', {
   orgId: integer('org_id').references(() => organizations.id).notNull(),
   name: text('name').notNull(),
   location: text('location'),
+  countryCode: text('country_code').default('EG').notNull(),
+  currency: text('currency').default('EGP').notNull(),
+  timeZone: text('time_zone').default('Africa/Cairo').notNull(),
+  locale: text('locale').default('ar').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// Reference data used by finance, sales, purchasing and tax modules.
+export const currencies = pgTable('currencies', {
+  id: serial('id').primaryKey(),
+  code: text('code').notNull().unique(),
+  name: text('name').notNull(),
+  symbol: text('symbol').notNull(),
+  decimalPlaces: integer('decimal_places').default(2).notNull(),
+  active: boolean('active').default(true).notNull(),
+});
+
+export const taxRates = pgTable('tax_rates', {
+  id: serial('id').primaryKey(),
+  orgId: integer('org_id').references(() => organizations.id).notNull(),
+  countryCode: text('country_code').notNull(),
+  name: text('name').notNull(),
+  rate: doublePrecision('rate').notNull(),
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => ({
+  taxRateCountryNameUnique: unique().on(table.orgId, table.countryCode, table.name),
+}));
 
 // Users
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  uid: text('uid').notNull().unique(), // Auth UID / Employee Identifier
+  uid: text('uid').notNull().unique(), // Firebase Auth UID
   email: text('email').notNull().unique(),
-  password: text('password'), // Encrypted / Hashed password for direct system auth
   name: text('name').notNull(),
   role: userRoleEnum('role').notNull(),
   orgId: integer('org_id').references(() => organizations.id).notNull(),
@@ -165,6 +195,14 @@ export const documents = pgTable('documents', {
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   branches: many(branches),
   users: many(users),
+  taxRates: many(taxRates),
+}));
+
+export const taxRatesRelations = relations(taxRates, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [taxRates.orgId],
+    references: [organizations.id],
+  }),
 }));
 
 export const branchesRelations = relations(branches, ({ one, many }) => ({

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Truck, 
-  PackageCheck, 
-  FileText, 
-  MapPin, 
+import {
+  Truck,
+  PackageCheck,
+  FileText,
+  MapPin,
   ExternalLink,
   ChevronDown,
   Anchor,
@@ -53,7 +53,7 @@ export const Shipments = () => {
             <p className="text-2xl font-black text-primary group-hover:text-white">{shipments.length}</p>
           </div>
         </div>
-        
+
         <div className="lg:col-span-2 luxury-card p-6 flex flex-col justify-center gap-2">
           <FileUploader label="Instant Export Documents (PDF/XLS)" />
         </div>
@@ -117,7 +117,7 @@ export const Shipments = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
                   <div className="flex items-center gap-6 text-xs font-medium text-slate-500">
                     <span>Created: {new Date(shp.createdAt).toLocaleDateString()}</span>

@@ -7,9 +7,11 @@
     "dev": "tsx server.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "seed": "tsx seed.ts",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate --config=src/db/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=src/db/drizzle.config.ts",
+    "seed": "tsx seed.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -40,6 +42,7 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "react-i18next": "^17.1.12",
+    "react-is": "^19.3.1",
     "recharts": "^3.10.1",
     "superjson": "^2.2.6",
     "tailwind-merge": "^3.7.0",
@@ -47,14 +50,14 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.28.2",
+    "esbuild": "^0.25.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
-    "typescript": "^7.0.2",
-    "@types/express": "^4.17.21"
+    "typescript": "^7.0.2"
   }
 }

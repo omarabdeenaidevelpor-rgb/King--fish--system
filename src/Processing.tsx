@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Play, 
-  CheckCircle, 
-  Trash2, 
-  Scale, 
+import {
+  Play,
+  CheckCircle,
+  Trash2,
+  Scale,
   Layers,
   ArrowRight,
   Activity
@@ -41,8 +41,8 @@ export const Processing = () => {
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                 {t('processing.inputLot')}
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="KF-PSD-2024-XXX"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent outline-none"
               />
@@ -109,7 +109,7 @@ export const Processing = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-10">
                     <div className="text-center">
                       <p className="text-[10px] text-slate-400 uppercase font-black tracking-[0.2em] mb-1">Input Mass</p>

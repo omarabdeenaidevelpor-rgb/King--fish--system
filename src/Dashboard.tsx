@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Plus, 
-  TrendingUp, 
-  TrendingDown, 
-  Activity, 
+import {
+  Plus,
+  TrendingUp,
+  TrendingDown,
+  Activity,
   Clock,
   CheckCircle2,
   AlertTriangle,
@@ -12,13 +12,13 @@ import {
   ArrowDownToLine,
   ShieldCheck
 } from 'lucide-react';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   AreaChart,
   Area
@@ -63,36 +63,36 @@ export const Dashboard = () => {
   return (
     <div className="space-y-10">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <StatCard 
-          title="Total Intake" 
-          value={`${(stats?.totalWeight || 0).toLocaleString()} kg`} 
-          trend="Real-time" 
-          trendType="up" 
-          icon={ArrowDownToLine} 
+        <StatCard
+          title="Total Intake"
+          value={`${(stats?.totalWeight || 0).toLocaleString()} kg`}
+          trend="Real-time"
+          trendType="up"
+          icon={ArrowDownToLine}
           loading={isLoading}
         />
-        <StatCard 
-          title="Authorized Lots" 
-          value={stats?.totalLots || 0} 
-          trend="Secured" 
-          trendType="up" 
-          icon={Package} 
+        <StatCard
+          title="Authorized Lots"
+          value={stats?.totalLots || 0}
+          trend="Secured"
+          trendType="up"
+          icon={Package}
           loading={isLoading}
         />
-        <StatCard 
-          title="Active Exports" 
-          value={stats?.activeExports || 0} 
-          trend="In Transit" 
-          trendType="up" 
-          icon={Activity} 
+        <StatCard
+          title="Active Exports"
+          value={stats?.activeExports || 0}
+          trend="In Transit"
+          trendType="up"
+          icon={Activity}
           loading={isLoading}
         />
-        <StatCard 
-          title="Quality Alerts" 
-          value={stats?.qualityAlerts || 0} 
-          trend={stats?.qualityAlerts === 0 ? "Nominal" : "Warning"} 
-          trendType={stats?.qualityAlerts === 0 ? "up" : "down"} 
-          icon={ShieldCheck} 
+        <StatCard
+          title="Quality Alerts"
+          value={stats?.qualityAlerts || 0}
+          trend={stats?.qualityAlerts === 0 ? "Nominal" : "Warning"}
+          trendType={stats?.qualityAlerts === 0 ? "up" : "down"}
+          icon={ShieldCheck}
           loading={isLoading}
         />
       </div>
@@ -125,37 +125,37 @@ export const Dashboard = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis 
-                  dataKey="time" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }} 
+                <XAxis
+                  dataKey="time"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 800 }}
                   unit="°C"
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#0A192F', 
-                    border: 'none', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#0A192F',
+                    border: 'none',
                     borderRadius: '16px',
                     fontSize: '10px',
                     fontWeight: 'bold',
                     color: '#fff',
                     boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2)'
-                  }} 
+                  }}
                   itemStyle={{ color: '#C5A059' }}
                 />
-                <Area 
-                  type="monotone" 
-                  dataKey="temp" 
-                  stroke="#C5A059" 
-                  strokeWidth={4} 
-                  fillOpacity={1} 
-                  fill="url(#colorTemp)" 
+                <Area
+                  type="monotone"
+                  dataKey="temp"
+                  stroke="#C5A059"
+                  strokeWidth={4}
+                  fillOpacity={1}
+                  fill="url(#colorTemp)"
                 />
               </AreaChart>
             </ResponsiveContainer>

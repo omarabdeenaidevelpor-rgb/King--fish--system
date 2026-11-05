@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  LayoutDashboard, 
-  ArrowDownToLine, 
-  Settings2, 
-  ShieldCheck, 
-  PackageSearch, 
+import {
+  LayoutDashboard,
+  ArrowDownToLine,
+  Settings2,
+  ShieldCheck,
+  PackageSearch,
   Truck,
   Languages,
   LogOut,
@@ -31,8 +31,8 @@ const NavItem = ({ icon: Icon, label, active, onClick, collapsed }: NavItemProps
     onClick={onClick}
     className={cn(
       "flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 relative group",
-      active 
-        ? "bg-white/10 text-white shadow-inner" 
+      active
+        ? "bg-white/10 text-white shadow-inner"
         : "text-slate-300 hover:text-white hover:bg-white/5"
     )}
   >
@@ -44,11 +44,11 @@ const NavItem = ({ icon: Icon, label, active, onClick, collapsed }: NavItemProps
   </button>
 );
 
-export const Layout = ({ 
-  children, 
-  activeTab, 
-  setActiveTab 
-}: { 
+export const Layout = ({
+  children,
+  activeTab,
+  setActiveTab
+}: {
   children: React.ReactNode;
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -57,7 +57,7 @@ export const Layout = ({
   const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  
+
   const isRtl = i18n.dir() === 'rtl';
 
   const toggleLanguage = () => {
@@ -86,24 +86,24 @@ export const Layout = ({
 
   return (
     <div className={cn("min-h-screen bg-[#F8FAFC] font-sans flex flex-col lg:flex-row text-slate-800", isRtl ? "text-right" : "text-left")} dir={i18n.dir()}>
-      
+
       {/* Mobile Backdrop */}
       {mobileOpen && (
-        <div 
-          onClick={() => setMobileOpen(false)} 
-          className="fixed inset-0 bg-primary/70 backdrop-blur-sm z-40 lg:hidden transition-opacity" 
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-primary/70 backdrop-blur-sm z-40 lg:hidden transition-opacity"
         />
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={cn(
           "bg-primary text-white flex flex-col h-screen fixed lg:sticky top-0 z-50 shadow-2xl transition-all duration-300 ease-in-out border-r border-white/5",
           collapsed ? "lg:w-20" : "lg:w-72",
-          mobileOpen 
-            ? "translate-x-0 w-72" 
-            : isRtl 
-              ? "translate-x-full lg:translate-x-0 w-72" 
+          mobileOpen
+            ? "translate-x-0 w-72"
+            : isRtl
+              ? "translate-x-full lg:translate-x-0 w-72"
               : "-translate-x-full lg:translate-x-0 w-72"
         )}
       >
@@ -111,10 +111,10 @@ export const Layout = ({
         <div className="p-5 flex items-center justify-between border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border border-white/15 p-1 backdrop-blur-md">
-              <img 
-                src="/public/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png" 
-                alt="King Fish Logo" 
-                className="w-full h-full object-contain filter drop-shadow-sm" 
+              <img
+                src="/public/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png"
+                alt="King Fish Logo"
+                className="w-full h-full object-contain filter drop-shadow-sm"
               />
             </div>
             {!collapsed && (
@@ -126,7 +126,7 @@ export const Layout = ({
           </div>
 
           {/* Close button for mobile */}
-          <button 
+          <button
             onClick={() => setMobileOpen(false)}
             className="p-2 text-slate-400 hover:text-white rounded-xl lg:hidden hover:bg-white/5"
           >
@@ -134,12 +134,12 @@ export const Layout = ({
           </button>
 
           {/* Collapse toggle for desktop */}
-          <button 
+          <button
             onClick={() => setCollapsed(!collapsed)}
             className="hidden lg:flex p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
             title={collapsed ? "Expand" : "Collapse"}
           >
-            {collapsed 
+            {collapsed
               ? (isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />)
               : (isRtl ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />)
             }
@@ -149,12 +149,12 @@ export const Layout = ({
         {/* Navigation items */}
         <nav className="flex-1 py-5 px-3 overflow-y-auto space-y-1.5">
           {filteredMenu.map(item => (
-            <NavItem 
+            <NavItem
               key={item.id}
-              icon={item.icon} 
-              label={item.label} 
-              active={activeTab === item.id} 
-              onClick={() => handleNavClick(item.id)} 
+              icon={item.icon}
+              label={item.label}
+              active={activeTab === item.id}
+              onClick={() => handleNavClick(item.id)}
               collapsed={collapsed}
             />
           ))}
@@ -162,15 +162,15 @@ export const Layout = ({
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-white/10 space-y-2 shrink-0">
-          <button 
+          <button
             onClick={toggleLanguage}
             className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
           >
             <Languages className="w-4 h-4 shrink-0 text-accent" />
             {!collapsed && <span>{t(`lang.${i18n.language}`, i18n.language === 'ar' ? 'العربية' : i18n.language === 'en' ? 'English' : 'Italiano')}</span>}
           </button>
-          
-          <button 
+
+          <button
             onClick={logout}
             className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold text-rose-300 hover:text-rose-100 hover:bg-rose-500/10 rounded-xl transition-colors"
           >
@@ -182,10 +182,10 @@ export const Layout = ({
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 min-h-screen overflow-x-hidden">
-        
+
         {/* Top Header Bar */}
         <header className="h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 sm:px-8 shrink-0 sticky top-0 z-30 shadow-xs">
-          
+
           {/* Left: Mobile Toggle & Logo Branding */}
           <div className="flex items-center gap-3 sm:gap-5">
             <button
@@ -199,10 +199,10 @@ export const Layout = ({
             {/* Prominent Logo on the Top Bar */}
             <div className="flex items-center gap-3 group">
               <div className="w-11 h-11 sm:w-12 sm:h-12 bg-white rounded-xl shadow-xs border border-slate-200 p-1 flex items-center justify-center shrink-0">
-                <img 
-                  src="/public/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png" 
-                  alt="King Fish Logo" 
-                  className="w-full h-full object-contain filter drop-shadow-xs" 
+                <img
+                  src="/public/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png"
+                  alt="King Fish Logo"
+                  className="w-full h-full object-contain filter drop-shadow-xs"
                 />
               </div>
               <div className="hidden sm:flex flex-col">
@@ -223,7 +223,7 @@ export const Layout = ({
               <span className="text-xs font-bold text-primary">{user?.name}</span>
               <span className="text-[10px] text-accent font-black uppercase tracking-widest">{user?.role?.replace('_', ' ')}</span>
             </div>
-            
+
             <div className="w-10 h-10 rounded-xl navy-gradient flex items-center justify-center font-bold text-white shadow-md shadow-primary/20 uppercase text-xs">
               {user?.name?.substring(0, 2) || 'AD'}
             </div>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  ShieldCheck, 
-  AlertOctagon, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  ShieldCheck,
+  AlertOctagon,
+  CheckCircle2,
+  XCircle,
   Thermometer,
   Beaker,
   FileText,
@@ -93,8 +93,8 @@ export const Quality = () => {
             <h3 className="font-bold text-slate-900 text-sm">Recent Inspections</h3>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Find Lot..."
                 className="pl-10 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-slate-900 outline-none"
               />
@@ -130,7 +130,7 @@ export const Quality = () => {
                       <td className="px-6 py-4">
                         <span className={cn(
                           "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                          qc.status === 'PENDING' ? "bg-amber-50 text-amber-700 border border-amber-100" : 
+                          qc.status === 'PENDING' ? "bg-amber-50 text-amber-700 border border-amber-100" :
                           qc.status === 'PASS' ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
                           "bg-rose-50 text-rose-700 border border-rose-100"
                         )}>

@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreHorizontal, 
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
   ArrowDownToLine,
   ChevronRight,
   ClipboardCheck,
@@ -23,7 +23,7 @@ export const Receiving = () => {
 
   const { data: suppliersData = [] } = trpc.listSuppliers.useQuery();
   const { data: lotsData = [], refetch } = trpc.listLots.useQuery();
-  
+
   const createLotMutation = trpc.createLot.useMutation({
     onSuccess: () => refetch()
   });
@@ -62,7 +62,7 @@ export const Receiving = () => {
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                 {t('receiving.supplier')}
               </label>
-              <select 
+              <select
                 value={form.supplierId}
                 onChange={(e) => setForm({...form, supplierId: e.target.value})}
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent outline-none transition-all appearance-none"
@@ -77,8 +77,8 @@ export const Receiving = () => {
                   {t('receiving.weight')}
                 </label>
                 <div className="relative">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={form.weight}
                     onChange={(e) => setForm({...form, weight: e.target.value})}
                     placeholder="0.00"
@@ -92,8 +92,8 @@ export const Receiving = () => {
                   {t('receiving.temp')}
                 </label>
                 <div className="relative">
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     value={form.temp}
                     onChange={(e) => setForm({...form, temp: e.target.value})}
                     placeholder="-2.0"
@@ -103,15 +103,15 @@ export const Receiving = () => {
                 </div>
               </div>
             </div>
-            
+
             <FileUploader label="Supplier Certificate (PDF/Excel)" />
 
             <div className="space-y-2">
               <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
                 Vessel / Logistics ID
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={form.vesselName}
                 onChange={(e) => setForm({...form, vesselName: e.target.value})}
                 placeholder="SHIP-ID / TRUCK-REF"
@@ -119,7 +119,7 @@ export const Receiving = () => {
               />
             </div>
             <div className="pt-4">
-              <button 
+              <button
                 disabled={createLotMutation.isPending}
                 onClick={() => {
                   createLotMutation.mutate({
@@ -144,8 +144,8 @@ export const Receiving = () => {
           <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-6 bg-slate-50/30">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search premium intake logs..."
                 className="w-full pl-12 pr-6 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-accent outline-none shadow-sm"
               />

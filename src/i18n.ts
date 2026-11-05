@@ -238,7 +238,9 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'ar',
+    supportedLngs: ['ar', 'en', 'it', 'fr', 'es', 'de'],
+    fallbackLng: 'en',
+    load: 'languageOnly',
     interpolation: {
       escapeValue: false,
     },

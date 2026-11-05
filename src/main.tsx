@@ -1,11 +1,11 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
+import App from './App.tsx';
+import './index.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
-import superjson from 'superjson';
-import App from './App.tsx';
 import { trpc } from './lib/trpc.ts';
-import './index.css';
+import superjson from 'superjson';
+import React from 'react';
 
 const queryClient = new QueryClient();
 const trpcClient = trpc.createClient({
@@ -13,8 +13,8 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: '/trpc',
       headers: () => {
-        const token = localStorage.getItem('firebase_user_token');
-        return token ? { authorization: `Bearer ${token}` } : {};
+        const currentUser = localStorage.getItem('firebase_user_token');
+        return currentUser ? { authorization: `Bearer ${currentUser}` } : {};
       },
       transformer: superjson,
     }),
