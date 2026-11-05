@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema.ts';
@@ -9,7 +10,9 @@ export const hasDatabaseConfig = Boolean(
 
 // Development/preview can run the admin shell without a provisioned database.
 // Production remains database-backed unless DEMO_MODE is explicitly enabled.
-export const isDemoMode = process.env.DEMO_MODE === 'true' || process.env.NODE_ENV !== 'production';
+// Demo mode must be explicitly enabled. Development should use the configured
+// database so missing migrations or seed data are reported instead of hidden.
+export const isDemoMode = process.env.DEMO_MODE === 'true';
 
 declare global {
   var _postgresPool: Pool | undefined;

@@ -185,10 +185,21 @@ cd KING-FISH-Seafood-ERP-
 # 3. Install dependencies
 pnpm install
 
-# 4. Start development server
-pnpm dev
+# 4. Configure PostgreSQL
+cp .env.example .env
+# Set DATABASE_URL (or SQL_HOST/SQL_USER/SQL_PASSWORD/SQL_DB_NAME) in .env
+
+# 5. Apply the schema and create the initial admin data
+npm run db:setup
+
+# 6. Start development server
+npm run dev
 🌐 Open the Application
 http://localhost:3000
+
+The seeded credentials are controlled by `ADMIN_USERNAME` and `ADMIN_PASSWORD` in
+`.env` (the defaults are `admin` and `admin123`). `DEMO_MODE` is `false` by
+default so a missing database, migration, or seed cannot be silently hidden.
 🏭 Production Build
 pnpm build
 pnpm start
