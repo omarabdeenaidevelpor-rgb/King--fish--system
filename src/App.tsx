@@ -88,7 +88,7 @@ function SettingsView() {
     onSuccess: () => {
       refetch();
       setShowCreate(false);
-      setNewUserData({ name: '', email: '', role: 'RECEIVING_OPERATOR', branchId: 1 });
+      setNewUserData({ name: '', email: '', password: '', role: 'RECEIVING_OPERATOR', branchId: 1 });
     }
   });
 
@@ -96,6 +96,7 @@ function SettingsView() {
   const [newUserData, setNewUserData] = React.useState({
     name: '',
     email: '',
+    password: '',
     role: 'RECEIVING_OPERATOR' as any,
     branchId: 1 // Using numeric ID from seed
   });
@@ -210,7 +211,7 @@ function SettingsView() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Institutional Email</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Institutional Email / Username</label>
                 <input 
                   type="email" 
                   value={newUserData.email}
@@ -220,16 +221,32 @@ function SettingsView() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Assigned Role</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Login Password</label>
+                <input 
+                  type="password" 
+                  value={newUserData.password}
+                  onChange={(e) => setNewUserData({...newUserData, password: e.target.value})}
+                  placeholder="Minimum 4 characters"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent outline-none" 
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Assigned Operational Role</label>
                 <select 
                   value={newUserData.role}
                   onChange={(e) => setNewUserData({...newUserData, role: e.target.value as any})}
-                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent outline-none appearance-none"
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-accent outline-none appearance-none font-semibold text-primary"
                 >
                   {roles.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
               </div>
             </div>
+
+            {createUserMutation.error && (
+              <p className="text-xs text-rose-500 font-bold text-center">
+                {createUserMutation.error.message}
+              </p>
+            )}
 
             <div className="flex gap-4">
               <button 
@@ -239,11 +256,11 @@ function SettingsView() {
                 Discard
               </button>
               <button 
-                disabled={createUserMutation.isPending}
+                disabled={createUserMutation.isPending || !newUserData.password || !newUserData.email || !newUserData.name}
                 onClick={() => {
                   createUserMutation.mutate(newUserData);
                 }}
-                className="flex-2 py-4 gold-gradient text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-accent/20 flex items-center justify-center gap-2"
+                className="flex-2 py-4 gold-gradient text-primary rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-accent/20 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {createUserMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Authorize Personnel'}
               </button>

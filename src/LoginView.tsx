@@ -128,32 +128,36 @@ export const LoginView = () => {
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
-                    <span>{i18n.language === 'ar' ? 'تسجيل دخول المدير العام' : 'Access General Manager'}</span>
+                    <span>{i18n.language === 'ar' ? 'تسجيل الدخول للنظام' : 'Log In to System'}</span>
                     <ArrowRight className={cn("w-4 h-4 transition-transform group-hover:translate-x-1", i18n.dir() === 'rtl' && "rotate-180 group-hover:-translate-x-1")} />
                   </>
                 )}
               </button>
-
-              <div className="relative flex items-center justify-center py-2">
-                <div className="border-t border-slate-100 w-full" />
-                <span className="bg-white px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest absolute">
-                  {i18n.language === 'ar' ? 'أو' : 'OR'}
-                </span>
-              </div>
-
-              <button 
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={isSubmitting}
-                className="w-full py-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-2xl text-[11px] font-bold transition-all flex items-center justify-center gap-2"
-              >
-                <Mail className="w-4 h-4 text-primary" />
-                <span>{i18n.language === 'ar' ? 'دخول بحساب Google المعتمد' : 'Authenticate with Google SSO'}</span>
-              </button>
             </form>
           </div>
 
-          <div className="bg-slate-50 border-t border-slate-100 p-6 flex flex-col items-center gap-4">
+          {/* Certifications Banner */}
+          <div className="bg-slate-50/80 backdrop-blur-sm border-t border-slate-100 p-5 flex flex-col items-center gap-2">
+            <span className="text-[9px] font-black tracking-[0.25em] text-slate-400 uppercase">
+              {i18n.language === 'ar' ? 'الاعتمادات وشهادات الجودة الدولية للمصنع' : 'International Factory Accreditations & Standards'}
+            </span>
+            <div className="w-full bg-white rounded-2xl p-2.5 border border-slate-200/80 shadow-xs flex items-center justify-center hover:shadow-md transition-shadow">
+              <img 
+                src="/public/assets/aistudio/1793888974992_b4f00f48.jpg" 
+                alt="King Fish Certifications: HACCP, Halal, ISO 22000, MSC, FDA, ASC, BRC" 
+                className="w-full max-h-16 object-contain filter contrast-105"
+              />
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+              <span className="text-[9px] font-bold text-accent px-2 py-0.5 bg-accent/10 rounded-full">HACCP</span>
+              <span className="text-[9px] font-bold text-emerald-700 px-2 py-0.5 bg-emerald-50 rounded-full">HALAL</span>
+              <span className="text-[9px] font-bold text-slate-600 px-2 py-0.5 bg-slate-100 rounded-full">ISO 22000</span>
+              <span className="text-[9px] font-bold text-sky-700 px-2 py-0.5 bg-sky-50 rounded-full">FDA APPROVED</span>
+              <span className="text-[9px] font-bold text-rose-700 px-2 py-0.5 bg-rose-50 rounded-full">BRC QUALITY</span>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 border-t border-slate-100 p-5 flex flex-col items-center gap-3">
             <button 
               onClick={toggleLanguage}
               className="flex items-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors"
@@ -161,7 +165,7 @@ export const LoginView = () => {
               <Languages className="w-4 h-4 text-accent" />
               {i18n.language === 'ar' ? 'Switch to English' : 'تحويل للغة العربية'}
             </button>
-            <p className="text-[10px] text-slate-300 font-medium">© 2024 King Fish Port Said · Enterprise Edition</p>
+            <p className="text-[10px] text-slate-400 font-medium">© 2024 King Fish Port Said · Enterprise Industrial Edition</p>
           </div>
         </div>
       </div>
