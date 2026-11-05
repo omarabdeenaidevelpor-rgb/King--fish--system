@@ -133,7 +133,10 @@ export const kingFishRouter = t.router({
         message: 'حساب المدير غير موجود. شغّل npm run db:migrate ثم npm run seed قبل تسجيل الدخول.',
       });
     }
-    return { token: createAdminSession(adminUser.id) };
+    return {
+      token: createAdminSession(adminUser.id),
+      user: adminUser,
+    };
   }),
 
   me: t.procedure.use(isAuthed).query(async ({ ctx }) => {

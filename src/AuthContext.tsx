@@ -28,8 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('firebase_user_token'));
 
   // tRPC query to get profile
-  const { data: profile, refetch: refetchProfile } = trpc.me.useQuery(undefined, {
-    enabled: !!token,
+  const { data: profile } = trpc.me.useQuery(undefined, {
+    enabled: !!token && !user,
   });
   const credentialLogin = trpc.loginWithCredentials.useMutation();
 
@@ -66,8 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithCredentials = async (username: string, pass: string): Promise<boolean> => {
     const result = await credentialLogin.mutateAsync({ username, password: pass });
     setToken(result.token);
+    setUser(result.user as any);
     localStorage.setItem('firebase_user_token', result.token);
-    await refetchProfile();
     return true;
   };
 
