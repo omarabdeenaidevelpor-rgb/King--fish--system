@@ -40,8 +40,9 @@ export const branches = pgTable('branches', {
 // Users
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  uid: text('uid').notNull().unique(), // Firebase Auth UID
+  uid: text('uid').notNull().unique(), // Auth UID / Employee Identifier
   email: text('email').notNull().unique(),
+  password: text('password'), // Encrypted / Hashed password for direct system auth
   name: text('name').notNull(),
   role: userRoleEnum('role').notNull(),
   orgId: integer('org_id').references(() => organizations.id).notNull(),

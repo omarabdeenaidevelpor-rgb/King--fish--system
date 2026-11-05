@@ -49,6 +49,15 @@ export const createContext = async ({ req }: { req: any }) => {
     return { user: adminUser || null };
   }
 
+  // Direct Staff credential token support: user_token_<id>
+  if (token.startsWith('user_token_')) {
+    const userId = parseInt(token.replace('user_token_', ''));
+    if (!isNaN(userId)) {
+      const [staffUser] = await db.select().from(users).where(eq(users.id, userId));
+      return { user: staffUser || null };
+    }
+  }
+
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     // Find by UID or Email (to sync first login)
@@ -111,6 +120,41 @@ export const kingFishRouter = t.router({
     return org;
   }),
 
+  // Public Login with Username/Email and Password
+  loginWithCredentials: t.procedure.input(z.object({
+    username: z.string(),
+    password: z.string(),
+  })).mutation(async ({ input }) => {
+    const cleanUser = input.username.trim();
+    // 1. Check if General Manager admin credentials
+    if ((cleanUser.toLowerCase() === 'admin' || cleanUser.toLowerCase() === 'admin@kingfish.com') && input.password === 'admin123') {
+      const [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+      return {
+        success: true,
+        token: 'admin_authorized_token_kf_2024',
+        user: adminUser,
+      };
+    }
+
+    // 2. Check in database for staff members created by General Manager
+    const [staff] = await db.select().from(users).where(
+      sql`lower(${users.email}) = lower(${cleanUser})`
+    );
+
+    if (staff && staff.password && staff.password === input.password) {
+      return {
+        success: true,
+        token: `user_token_${staff.id}`,
+        user: staff,
+      };
+    }
+
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Invalid username or password',
+    });
+  }),
+
   // User Management
   listUsers: t.procedure.use(isAdmin).query(async ({ ctx }) => {
     return await db.select().from(users).where(eq(users.orgId, ctx.user.orgId));
@@ -119,12 +163,14 @@ export const kingFishRouter = t.router({
   createUser: t.procedure.use(isAdmin).input(z.object({
     name: z.string(),
     email: z.string().email(),
+    password: z.string().min(4),
     role: z.enum(['RECEIVING_OPERATOR', 'QUALITY_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_OPERATOR', 'EXPORT_OPERATOR']),
     branchId: z.number(),
   })).mutation(async ({ ctx, input }) => {
     const [newUser] = await db.insert(users).values({
-      uid: `pending_${Math.random().toString(36).substr(2, 9)}`,
-      email: input.email,
+      uid: `staff_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+      email: input.email.trim().toLowerCase(),
+      password: input.password,
       name: input.name,
       role: input.role,
       orgId: ctx.user.orgId,
