@@ -17,6 +17,7 @@ import {
 } from './db/schema.ts';
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { adminAuth } from './lib/firebase-admin.ts';
+import { verifyAdminSessionToken } from './lib/admin-session.ts';
 import superjson from 'superjson';
 
 export const createContext = async ({ req }: { req: any }) => {
@@ -25,11 +26,26 @@ export const createContext = async ({ req }: { req: any }) => {
     return { user: null };
   }
   
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.slice('Bearer '.length).trim();
+  if (!token) {
+    return { user: null };
+  }
 
-  // Direct Admin credential support
-  if (token === 'admin_authorized_token_kf_2024') {
-    const [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+  if (token.startsWith('admin.')) {
+    const tokenSecret = process.env.ADMIN_TOKEN_SECRET;
+    if (!tokenSecret) {
+      return { user: null };
+    }
+
+    const session = verifyAdminSessionToken(token, tokenSecret);
+    if (!session) {
+      return { user: null };
+    }
+
+    const [adminUser] = await db.select().from(users).where(and(
+      eq(users.id, session.userId),
+      eq(users.role, 'GENERAL_MANAGER'),
+    ));
     return { user: adminUser || null };
   }
 

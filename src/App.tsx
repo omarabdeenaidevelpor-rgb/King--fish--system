@@ -9,7 +9,6 @@ import { Inventory } from './Inventory.tsx';
 import { Shipments } from './Shipments.tsx';
 import { ShieldCheck, User, Building, Bell, History, Loader2, Plus } from 'lucide-react';
 import { trpc } from './lib/trpc.ts';
-import { auth } from './AuthContext.tsx';
 import './i18n.ts';
 
 import { AuthProvider, useAuth } from './AuthContext.tsx';
@@ -17,7 +16,7 @@ import { LoginView } from './LoginView.tsx';
 
 function AppContent() {
   const { t } = useTranslation();
-  const { user, token, isLoading } = useAuth();
+  const { user, token, isLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = React.useState('dashboard');
 
   // Handle auto-routing for employees on login
@@ -45,7 +44,7 @@ function AppContent() {
           <p className="text-slate-400 text-sm leading-relaxed">
             Your account is authenticated but not authorized in the King Fish registry. Please contact your General Manager to grant you access.
           </p>
-          <button onClick={() => auth.signOut()} className="w-full py-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-all">
+          <button onClick={logout} className="w-full py-4 bg-slate-50 border border-slate-100 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-all">
             Return to Login
           </button>
         </div>

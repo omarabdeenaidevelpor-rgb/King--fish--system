@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useAuth } from './AuthContext';
-import { ShieldCheck, Mail, Lock, User, Loader2, ArrowRight, Languages } from 'lucide-react';
+import { Mail, Lock, User, Loader2, ArrowRight, Languages } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from './lib/utils';
 
 export const LoginView = () => {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const { login, loginWithCredentials } = useAuth();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -21,8 +21,8 @@ export const LoginView = () => {
       if (!ok) {
         setError(i18n.language === 'ar' ? 'اسم المستخدم أو كلمة المرور غير صحيحة' : 'Invalid credentials');
       }
-    } catch (err: any) {
-      setError(err.message || 'Authorization failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authorization failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -33,8 +33,8 @@ export const LoginView = () => {
     setError('');
     try {
       await login();
-    } catch (err: any) {
-      setError(err.message || 'Authorization failed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Authorization failed');
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +50,7 @@ export const LoginView = () => {
       {/* Dynamic Brand Background */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/public/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png" 
+          src="/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png" 
           alt="" 
           className="w-full h-full object-cover opacity-15 grayscale brightness-75 scale-105 blur-[3px]"
         />
@@ -64,7 +64,7 @@ export const LoginView = () => {
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="w-36 h-36 rounded-3xl flex items-center justify-center p-1 group transition-transform duration-500 hover:scale-105 drop-shadow-[0_15px_30px_rgba(10,25,47,0.25)]">
                 <img 
-                  src="/public/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png" 
+                  src="/assets/aistudio/file_0000000064608246878eeb8954a49ae3_c40bdb85.png" 
                   alt="King Fish Logo" 
                   className="w-full h-full object-contain filter drop-shadow-md"
                 />

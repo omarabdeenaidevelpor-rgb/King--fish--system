@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { User, UserRole } from './lib/utils';
+import { User } from './lib/utils';
 import firebaseConfig from '../firebase-applet-config.json';
 import { trpc } from './lib/trpc';
 
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('firebase_user_token', idToken);
       } else {
         const currentToken = localStorage.getItem('firebase_user_token');
-        if (!currentToken || !currentToken.startsWith('admin_authorized_token')) {
+        if (!currentToken?.startsWith('admin.')) {
           setToken(null);
           setUser(null);
           localStorage.removeItem('firebase_user_token');
@@ -54,7 +54,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (profile) {
-      setUser(profile as any);
+      setUser({
+        ...profile,
+        id: String(profile.id),
+        branchId: String(profile.branchId ?? ''),
+      });
     }
   }, [profile]);
 
@@ -63,14 +67,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithCredentials = async (username: string, pass: string): Promise<boolean> => {
-    if ((username === 'admin' || username === 'admin@kingfish.com') && pass === 'admin123') {
-      const adminToken = 'admin_authorized_token_kf_2024';
-      setToken(adminToken);
-      localStorage.setItem('firebase_user_token', adminToken);
-      await refetchProfile();
-      return true;
+    const response = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password: pass }),
+    });
+
+    if (response.status === 401) {
+      return false;
     }
-    return false;
+    if (!response.ok) {
+      const result = await response.json() as { error?: unknown };
+      throw new Error(
+        typeof result.error === 'string' ? result.error : 'Admin login is unavailable.',
+      );
+    }
+
+    const result: unknown = await response.json();
+    if (
+      typeof result !== 'object'
+      || result === null
+      || !('token' in result)
+      || typeof result.token !== 'string'
+    ) {
+      throw new Error('The server returned an invalid login response.');
+    }
+
+    setToken(result.token);
+    localStorage.setItem('firebase_user_token', result.token);
+    await refetchProfile();
+    return true;
   };
 
   const logout = () => {
