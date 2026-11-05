@@ -96,9 +96,22 @@ export const kingFishRouter = t.router({
       throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid credentials' });
     }
 
-    const [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+    let adminUser;
+    try {
+      [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+    } catch (error) {
+      console.error('Admin login database error:', error);
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: 'قاعدة البيانات غير متصلة. اضبط DATABASE_URL ثم شغّل migration وseed قبل تسجيل الدخول.',
+        cause: error,
+      });
+    }
     if (!adminUser) {
-      throw new TRPCError({ code: 'PRECONDITION_FAILED', message: 'Run the database seed before signing in.' });
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: 'حساب المدير غير موجود. شغّل npm run db:migrate ثم npm run seed قبل تسجيل الدخول.',
+      });
     }
     return { token: createAdminSession(adminUser.id) };
   }),

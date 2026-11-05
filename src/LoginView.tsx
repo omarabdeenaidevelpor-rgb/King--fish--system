@@ -4,6 +4,16 @@ import { ShieldCheck, Mail, Lock, User, Loader2, ArrowRight, Languages } from 'l
 import { useTranslation } from 'react-i18next';
 import { cn } from './lib/utils';
 
+function getLoginErrorMessage(error: any, language: string) {
+  const message = typeof error?.message === 'string' ? error.message : '';
+  if (!message || message.includes('Unexpected end of JSON input')) {
+    return language === 'ar'
+      ? 'تعذر الاتصال بالخادم. تأكد من تشغيل قاعدة البيانات ثم تنفيذ migration وseed.'
+      : 'Unable to reach the server. Check the database, then run migration and seed.';
+  }
+  return message;
+}
+
 export const LoginView = () => {
   const { t, i18n } = useTranslation();
   const { login, loginWithCredentials } = useAuth();
@@ -22,7 +32,7 @@ export const LoginView = () => {
         setError(i18n.language === 'ar' ? 'اسم المستخدم أو كلمة المرور غير صحيحة' : 'Invalid credentials');
       }
     } catch (err: any) {
-      setError(err.message || 'Authorization failed');
+      setError(getLoginErrorMessage(err, i18n.language));
     } finally {
       setIsSubmitting(false);
     }
@@ -34,7 +44,7 @@ export const LoginView = () => {
     try {
       await login();
     } catch (err: any) {
-      setError(err.message || 'Authorization failed');
+      setError(getLoginErrorMessage(err, i18n.language));
     } finally {
       setIsSubmitting(false);
     }
