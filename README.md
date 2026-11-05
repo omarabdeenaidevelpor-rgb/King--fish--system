@@ -185,10 +185,21 @@ cd KING-FISH-Seafood-ERP-
 # 3. Install dependencies
 pnpm install
 
-# 4. Start development server
-pnpm dev
+# 4. Configure PostgreSQL
+cp .env.example .env
+# Set DATABASE_URL (or SQL_HOST/SQL_USER/SQL_PASSWORD/SQL_DB_NAME) in .env
+
+# 5. Apply the schema and create the initial admin data
+npm run db:setup
+
+# 6. Start development server
+npm run dev
 🌐 Open the Application
 http://localhost:3000
+
+The seeded credentials are controlled by `ADMIN_USERNAME` and `ADMIN_PASSWORD` in
+`.env` (the defaults are `admin` and `admin123`). `DEMO_MODE` is `false` by
+default so a missing database, migration, or seed cannot be silently hidden.
 🏭 Production Build
 pnpm build
 pnpm start
@@ -236,18 +247,3 @@ SMART OPERATIONS. RELIABLE TRACEABILITY. CONNECTED SEAFOOD EXPORTS.
 
 <sub>Version 1.0.0 • Enterprise Seafood Management</sub>
 </div>
-# Admin login configuration
-
-Copy `.env.example` to `.env` and set `ADMIN_USERNAME`, `ADMIN_PASSWORD`,
-`ADMIN_EMAIL`, and `ADMIN_TOKEN_SECRET`. The admin email must match an existing
-`GENERAL_MANAGER` user created by `seed.ts`. Use a unique, randomly generated
-token secret of at least 32 characters and do not commit `.env`. Run
-`npm run seed` once to create the initial organization, branch, and manager
-account if they are not already present.
-
-Generate a session secret with
-`node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`.
-
-To use the requested initial credentials for local development, set
-`ADMIN_USERNAME=admin` and `ADMIN_PASSWORD=admin123` in `.env`. Replace that
-password with a strong value before deploying the application.

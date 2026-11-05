@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Warehouse, 
-  Move, 
-  Map as MapIcon, 
-  Thermometer, 
+import {
+  Warehouse,
+  Move,
+  Map as MapIcon,
+  Thermometer,
   Box,
   ChevronRight,
   Search,
@@ -73,11 +73,11 @@ export const Inventory = () => {
                     <span className="font-bold text-slate-900">{loc.capacityPercent}%</span>
                   </div>
                   <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className={cn(
                         "h-full rounded-full transition-all duration-1000",
                         (loc.capacityPercent || 0) > 80 ? "bg-rose-500" : (loc.capacityPercent || 0) > 50 ? "bg-amber-500" : "bg-emerald-500"
-                      )} 
+                      )}
                       style={{ width: `${loc.capacityPercent}%` }}
                     />
                   </div>
@@ -115,8 +115,8 @@ export const Inventory = () => {
           <div className="flex gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Find Item..."
                 className="pl-10 pr-4 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-slate-900 outline-none"
               />

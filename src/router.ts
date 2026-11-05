@@ -1,68 +1,65 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { db } from './db/index.ts';
-import { 
-  users, 
-  lots, 
-  organizations, 
-  branches, 
-  suppliers, 
-  storageLocations, 
-  auditLogs, 
-  qualityInspections, 
-  shipments, 
+import { db, hasDatabaseConfig, isDemoMode } from './db/index.ts';
+import {
+  users,
+  lots,
+  organizations,
+  branches,
+  suppliers,
+  storageLocations,
+  auditLogs,
+  qualityInspections,
+  shipments,
   shipmentItems,
   processingEvents,
   documents
+  ,currencies
+  ,taxRates
 } from './db/schema.ts';
 import { eq, and, sql, desc } from 'drizzle-orm';
 import { adminAuth } from './lib/firebase-admin.ts';
-import { verifyAdminSessionToken } from './lib/admin-session.ts';
+import { createAdminSession, verifyAdminSession } from './lib/session.ts';
 import superjson from 'superjson';
+
+const demoAdminUser = {
+  id: 1,
+  uid: 'demo-admin',
+  email: 'admin@kingfish.local',
+  name: 'General Manager',
+  role: 'GENERAL_MANAGER' as const,
+  orgId: 1,
+  branchId: 1,
+  createdAt: new Date(),
+};
 
 export const createContext = async ({ req }: { req: any }) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return { user: null };
   }
-  
-  const token = authHeader.slice('Bearer '.length).trim();
-  if (!token) {
-    return { user: null };
-  }
 
-  if (token.startsWith('admin.')) {
-    const tokenSecret = process.env.ADMIN_TOKEN_SECRET;
-    if (!tokenSecret) {
-      return { user: null };
+  const token = authHeader.split(' ')[1];
+
+  // Server-issued administrator session (credentials are never validated in the browser).
+  const session = verifyAdminSession(token);
+  if (session) {
+    let adminUser;
+    if (isDemoMode || !hasDatabaseConfig) {
+      adminUser = demoAdminUser;
+    } else {
+      [adminUser] = await db.select().from(users).where(
+        and(eq(users.id, session.userId), eq(users.role, 'GENERAL_MANAGER'))
+      );
     }
-
-    const session = verifyAdminSessionToken(token, tokenSecret);
-    if (!session) {
-      return { user: null };
-    }
-
-    const [adminUser] = await db.select().from(users).where(and(
-      eq(users.id, session.userId),
-      eq(users.role, 'GENERAL_MANAGER'),
-    ));
     return { user: adminUser || null };
-  }
-
-  // Direct Staff credential token support: user_token_<id>
-  if (token.startsWith('user_token_')) {
-    const userId = parseInt(token.replace('user_token_', ''));
-    if (!isNaN(userId)) {
-      const [staffUser] = await db.select().from(users).where(eq(users.id, userId));
-      return { user: staffUser || null };
-    }
   }
 
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     // Find by UID or Email (to sync first login)
     let [user] = await db.select().from(users).where(eq(users.uid, decodedToken.uid));
-    
+
     if (!user && decodedToken.email) {
       [user] = await db.select().from(users).where(eq(users.email, decodedToken.email));
       if (user) {
@@ -70,7 +67,7 @@ export const createContext = async ({ req }: { req: any }) => {
         await db.update(users).set({ uid: decodedToken.uid }).where(eq(users.id, user.id));
       }
     }
-    
+
     return { user: user || null };
   } catch (error) {
     return { user: null };
@@ -105,6 +102,43 @@ const isAdmin = t.middleware(({ ctx, next }) => {
 
 export const kingFishRouter = t.router({
   // Auth & Profile
+  loginWithCredentials: t.procedure.input(z.object({
+    username: z.string().min(1).max(100),
+    password: z.string().min(1).max(200),
+  })).mutation(async ({ input }) => {
+    const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
+    const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    if (input.username !== expectedUsername || input.password !== expectedPassword) {
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid credentials' });
+    }
+
+    let adminUser;
+    try {
+      if (isDemoMode || !hasDatabaseConfig) {
+        adminUser = demoAdminUser;
+      } else {
+        [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+      }
+    } catch (error) {
+      console.error('Admin login database error:', error);
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: 'قاعدة البيانات غير متصلة. اضبط DATABASE_URL ثم شغّل migration وseed قبل تسجيل الدخول.',
+        cause: error,
+      });
+    }
+    if (!adminUser) {
+      throw new TRPCError({
+        code: 'PRECONDITION_FAILED',
+        message: 'حساب المدير غير موجود. شغّل npm run db:migrate ثم npm run seed قبل تسجيل الدخول.',
+      });
+    }
+    return {
+      token: createAdminSession(adminUser.id),
+      user: adminUser,
+    };
+  }),
+
   me: t.procedure.use(isAuthed).query(async ({ ctx }) => {
     return ctx.user;
   }),
@@ -120,57 +154,60 @@ export const kingFishRouter = t.router({
     return org;
   }),
 
-  // Public Login with Username/Email and Password
-  loginWithCredentials: t.procedure.input(z.object({
-    username: z.string(),
-    password: z.string(),
-  })).mutation(async ({ input }) => {
-    const cleanUser = input.username.trim();
-    // 1. Check if General Manager admin credentials
-    if ((cleanUser.toLowerCase() === 'admin' || cleanUser.toLowerCase() === 'admin@kingfish.com') && input.password === 'admin123') {
-      const [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
-      return {
-        success: true,
-        token: 'admin_authorized_token_kf_2024',
-        user: adminUser,
-      };
+  // Global ERP foundation: tenant defaults, currencies and tax jurisdictions.
+  getGlobalSettings: t.procedure.use(isAuthed).query(async ({ ctx }) => {
+    if (isDemoMode || !hasDatabaseConfig) {
+      return { organization: { id: 1, name: 'King Fish Co.', countryCode: 'EG', defaultCurrency: 'EGP', defaultLocale: 'ar', defaultTimeZone: 'Africa/Cairo', fiscalYearStartMonth: 1 }, branches: [], taxRates: [], currencies: [] };
     }
+    const [organization] = await db.select().from(organizations).where(eq(organizations.id, ctx.user.orgId));
+    const organizationBranches = await db.select().from(branches).where(eq(branches.orgId, ctx.user.orgId));
+    const organizationTaxRates = await db.select().from(taxRates).where(eq(taxRates.orgId, ctx.user.orgId));
+    const activeCurrencies = await db.select().from(currencies).where(eq(currencies.active, true));
+    return {
+      organization,
+      branches: organizationBranches,
+      taxRates: organizationTaxRates,
+      currencies: activeCurrencies,
+    };
+  }),
 
-    // 2. Check in database for staff members created by General Manager
-    const [staff] = await db.select().from(users).where(
-      sql`lower(${users.email}) = lower(${cleanUser})`
-    );
-
-    if (staff && staff.password && staff.password === input.password) {
-      return {
-        success: true,
-        token: `user_token_${staff.id}`,
-        user: staff,
-      };
-    }
-
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'Invalid username or password',
+  updateGlobalSettings: t.procedure.use(isAdmin).input(z.object({
+    countryCode: z.string().length(2).toUpperCase().optional(),
+    defaultCurrency: z.string().length(3).toUpperCase().optional(),
+    defaultLocale: z.enum(['ar', 'en', 'it', 'fr', 'es', 'de']).optional(),
+    defaultTimeZone: z.string().min(1).max(100).optional(),
+    fiscalYearStartMonth: z.number().int().min(1).max(12).optional(),
+  })).mutation(async ({ ctx, input }) => {
+    const [updated] = await db.update(organizations)
+      .set(input)
+      .where(eq(organizations.id, ctx.user.orgId))
+      .returning();
+    await db.insert(auditLogs).values({
+      orgId: ctx.user.orgId,
+      actorId: ctx.user.id,
+      action: 'GLOBAL_SETTINGS_UPDATED',
+      entityType: 'ORGANIZATION',
+      entityId: String(ctx.user.orgId),
+      metadata: JSON.stringify(input),
     });
+    return updated;
   }),
 
   // User Management
   listUsers: t.procedure.use(isAdmin).query(async ({ ctx }) => {
+    if (isDemoMode || !hasDatabaseConfig) return [demoAdminUser];
     return await db.select().from(users).where(eq(users.orgId, ctx.user.orgId));
   }),
 
   createUser: t.procedure.use(isAdmin).input(z.object({
     name: z.string(),
     email: z.string().email(),
-    password: z.string().min(4),
     role: z.enum(['RECEIVING_OPERATOR', 'QUALITY_MANAGER', 'PRODUCTION_SUPERVISOR', 'WAREHOUSE_OPERATOR', 'EXPORT_OPERATOR']),
     branchId: z.number(),
   })).mutation(async ({ ctx, input }) => {
     const [newUser] = await db.insert(users).values({
-      uid: `staff_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
-      email: input.email.trim().toLowerCase(),
-      password: input.password,
+      uid: `pending_${Math.random().toString(36).substr(2, 9)}`,
+      email: input.email,
       name: input.name,
       role: input.role,
       orgId: ctx.user.orgId,
@@ -283,6 +320,9 @@ export const kingFishRouter = t.router({
 
   // Dashboard Stats
   getDashboardStats: t.procedure.use(isAuthed).query(async ({ ctx }) => {
+    if (isDemoMode || !hasDatabaseConfig) {
+      return { totalLots: 0, totalWeight: 0, activeExports: 0, qualityAlerts: 0 };
+    }
     const [lotCount] = await db.select({ count: sql<number>`count(*)` }).from(lots).where(eq(lots.orgId, ctx.user.orgId));
     const [totalWeight] = await db.select({ sum: sql<number>`sum(weight)` }).from(lots).where(eq(lots.orgId, ctx.user.orgId));
     const [activeExports] = await db.select({ count: sql<number>`count(*)` }).from(shipments).where(and(eq(shipments.orgId, ctx.user.orgId), eq(shipments.status, 'IN_TRANSIT')));

@@ -1,5 +1,5 @@
 import { db } from './src/db/index.ts';
-import { organizations, branches, users } from './src/db/schema.ts';
+import { organizations, branches, users, currencies, taxRates } from './src/db/schema.ts';
 import { eq, and } from 'drizzle-orm';
 
 async function seed() {
@@ -13,7 +13,11 @@ async function seed() {
   if (!org) {
     [org] = await db.insert(organizations).values({
       name: 'King Fish Co.',
-      slug: 'king-fish'
+      slug: 'king-fish',
+      countryCode: 'EG',
+      defaultCurrency: 'EGP',
+      defaultLocale: 'ar',
+      defaultTimeZone: 'Africa/Cairo',
     }).returning();
   }
 
@@ -26,15 +30,38 @@ async function seed() {
     [branchEg] = await db.insert(branches).values({
       orgId: org.id,
       name: 'Port Said Factory',
-      location: 'Port Said, Egypt'
+      location: 'Port Said, Egypt',
+      countryCode: 'EG',
+      currency: 'EGP',
+      timeZone: 'Africa/Cairo',
+      locale: 'ar',
     }).returning();
-    
+
     await db.insert(branches).values({
       orgId: org.id,
       name: 'Italy Branch',
-      location: 'Genoa, Italy'
+      location: 'Genoa, Italy',
+      countryCode: 'IT',
+      currency: 'EUR',
+      timeZone: 'Europe/Rome',
+      locale: 'it',
     });
   }
+
+  const referenceCurrencies = [
+    ['USD', 'US Dollar', '$'], ['EUR', 'Euro', '€'], ['EGP', 'Egyptian Pound', 'ج.م'],
+    ['GBP', 'Pound Sterling', '£'], ['AED', 'UAE Dirham', 'د.إ'], ['SAR', 'Saudi Riyal', 'ر.س'],
+  ] as const;
+  for (const [code, name, symbol] of referenceCurrencies) {
+    await db.insert(currencies).values({ code, name, symbol }).onConflictDoNothing();
+  }
+
+  await db.insert(taxRates).values({
+    orgId: org.id,
+    countryCode: 'EG',
+    name: 'Standard VAT',
+    rate: 0,
+  }).onConflictDoNothing();
 
   // 3. Initial GM (Current User)
   await db.insert(users).values({
@@ -52,4 +79,9 @@ async function seed() {
   console.log('Seeding completed successfully.');
 }
 
-seed().catch(console.error);
+seed()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error('Seed failed:', error);
+    process.exit(1);
+  });

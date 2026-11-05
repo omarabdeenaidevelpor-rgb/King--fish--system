@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { User } from './lib/utils';
+import { User, UserRole } from './lib/utils';
 import firebaseConfig from '../firebase-applet-config.json';
 import { trpc } from './lib/trpc';
 
@@ -28,9 +28,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('firebase_user_token'));
 
   // tRPC query to get profile
-  const { data: profile, refetch: refetchProfile } = trpc.me.useQuery(undefined, {
-    enabled: !!token,
+  const { data: profile } = trpc.me.useQuery(undefined, {
+    enabled: !!token && !user,
   });
+  const credentialLogin = trpc.loginWithCredentials.useMutation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
@@ -41,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('firebase_user_token', idToken);
       } else {
         const currentToken = localStorage.getItem('firebase_user_token');
-        if (!currentToken?.startsWith('admin.')) {
+        if (!currentToken || !currentToken.startsWith('kf_session_v1.')) {
           setToken(null);
           setUser(null);
           localStorage.removeItem('firebase_user_token');
@@ -54,11 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     if (profile) {
-      setUser({
-        ...profile,
-        id: String(profile.id),
-        branchId: String(profile.branchId ?? ''),
-      });
+      setUser(profile as any);
     }
   }, [profile]);
 
@@ -67,35 +64,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithCredentials = async (username: string, pass: string): Promise<boolean> => {
-    const response = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password: pass }),
-    });
-
-    if (response.status === 401) {
-      return false;
-    }
-    if (!response.ok) {
-      const result = await response.json() as { error?: unknown };
-      throw new Error(
-        typeof result.error === 'string' ? result.error : 'Admin login is unavailable.',
-      );
-    }
-
-    const result: unknown = await response.json();
-    if (
-      typeof result !== 'object'
-      || result === null
-      || !('token' in result)
-      || typeof result.token !== 'string'
-    ) {
-      throw new Error('The server returned an invalid login response.');
-    }
-
+    const result = await credentialLogin.mutateAsync({ username, password: pass });
     setToken(result.token);
+    setUser(result.user as any);
     localStorage.setItem('firebase_user_token', result.token);
-    await refetchProfile();
     return true;
   };
 

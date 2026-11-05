@@ -10,12 +10,12 @@ interface FileUploaderProps {
   onUploadSuccess?: (doc: any) => void;
 }
 
-export const FileUploader: React.FC<FileUploaderProps> = ({ 
-  label, 
-  accept = ".pdf,.xls,.xlsx", 
+export const FileUploader: React.FC<FileUploaderProps> = ({
+  label,
+  accept = ".pdf,.xls,.xlsx",
   linkedEntityType,
   linkedEntityId,
-  onUploadSuccess 
+  onUploadSuccess
 }) => {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -77,9 +77,9 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
   return (
     <div className="space-y-2">
       <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">{label}</label>
-      
+
       {!file ? (
-        <div 
+        <div
           onClick={() => fileInputRef.current?.click()}
           className="border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center gap-3 bg-slate-50/50 hover:bg-white hover:border-accent/40 transition-all cursor-pointer group"
         >
@@ -90,12 +90,12 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             <p className="text-xs font-bold text-slate-600">Click to upload document</p>
             <p className="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter">Supports PDF or Excel</p>
           </div>
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleFileChange} 
-            accept={accept} 
-            className="hidden" 
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept={accept}
+            className="hidden"
           />
         </div>
       ) : (
@@ -129,7 +129,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
               </div>
             </div>
           </div>
-          <button 
+          <button
             onClick={removeFile}
             className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
           >
