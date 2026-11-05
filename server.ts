@@ -1,41 +1,13 @@
-declare global {
-  var process: {
-    env: Record<string, string | undefined>;
-    exitCode?: number;
-  };
-}
+import { randomUUID } from 'node:crypto';
+import { mkdir } from 'node:fs/promises';
+import path from 'node:path';
+import cors from 'cors';
+import express from 'express';
+import multer from 'multer';
+import { and, eq } from 'drizzle-orm';
+import { createExpressMiddleware } from '@trpc/server/adapters/express';
+import { createServer } from 'vite';
 
-const nodeRequire = Function('return require')() as {
-  (id: string): any;
-};
-
-const { randomUUID } = nodeRequire('node:crypto') as {
-  randomUUID: () => string;
-};
-const { mkdir } = nodeRequire('node:fs/promises') as {
-  mkdir: (path: string, options?: { recursive?: boolean }) => Promise<void>;
-};
-const path = nodeRequire('node:path') as {
-  resolve: (...paths: string[]) => string;
-  extname: (value: string) => string;
-  join: (...paths: string[]) => string;
-  posix: { basename: (value: string) => string };
-};
-
-type RequestHandler = (req: any, res: any, next: (error?: unknown) => void) => void;
-type ErrorRequestHandler = (
-  error: any,
-  req: any,
-  res: any,
-  next: (error?: unknown) => void,
-) => void;
-
-const cors = nodeRequire('cors') as (options?: unknown) => any;
-const express = nodeRequire('express') as any;
-const multer = nodeRequire('multer') as any;
-const { and, eq } = nodeRequire('drizzle-orm') as any;
-const { createExpressMiddleware } = nodeRequire('@trpc/server/adapters/express') as any;
-const { createServer } = nodeRequire('vite') as any;
 import { db } from './src/db/index.ts';
 import { documents, users } from './src/db/schema.ts';
 import { createContext, kingFishRouter } from './src/router.ts';
@@ -44,6 +16,14 @@ import {
   getAdminAuthConfig,
   secureCompare,
 } from './src/lib/admin-session.ts';
+
+type RequestHandler = (req: any, res: any, next: (error?: unknown) => void) => void;
+type ErrorRequestHandler = (
+  error: any,
+  req: any,
+  res: any,
+  next: (error?: unknown) => void,
+) => void;
 
 type AuthenticatedUser = NonNullable<
   Awaited<ReturnType<typeof createContext>>['user']
@@ -63,7 +43,7 @@ const maxUploadSizeBytes = 10 * 1024 * 1024;
 
 const storage = multer.diskStorage({
   destination: uploadDirectory,
-  filename: (_req: any, file: any, callback: (error: Error | null, filename?: string) => void) => {
+  filename: (_req: any, file: any, callback: (error: Error | null, filename: string) => void) => {
     const normalizedName = file.originalname.replace(/\\/g, '/');
     const extension = path.extname(path.posix.basename(normalizedName)).slice(0, 20);
     callback(null, `${randomUUID()}${extension}`);
@@ -97,7 +77,7 @@ const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     return;
   }
 
-  if (error instanceof multer.MulterError) {
+  if (error instanceof (multer as any).MulterError) {
     const statusCode = error.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
     res.status(statusCode).json({
       error: error.code === 'LIMIT_FILE_SIZE'
