@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { db } from './db/index.ts';
+import { db, hasDatabaseConfig, isDemoMode } from './db/index.ts';
 import {
   users,
   lots,
@@ -22,6 +22,17 @@ import { adminAuth } from './lib/firebase-admin.ts';
 import { createAdminSession, verifyAdminSession } from './lib/session.ts';
 import superjson from 'superjson';
 
+const demoAdminUser = {
+  id: 1,
+  uid: 'demo-admin',
+  email: 'admin@kingfish.local',
+  name: 'General Manager',
+  role: 'GENERAL_MANAGER' as const,
+  orgId: 1,
+  branchId: 1,
+  createdAt: new Date(),
+};
+
 export const createContext = async ({ req }: { req: any }) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -33,9 +44,14 @@ export const createContext = async ({ req }: { req: any }) => {
   // Server-issued administrator session (credentials are never validated in the browser).
   const session = verifyAdminSession(token);
   if (session) {
-    const [adminUser] = await db.select().from(users).where(
-      and(eq(users.id, session.userId), eq(users.role, 'GENERAL_MANAGER'))
-    );
+    let adminUser;
+    if (isDemoMode || !hasDatabaseConfig) {
+      adminUser = demoAdminUser;
+    } else {
+      [adminUser] = await db.select().from(users).where(
+        and(eq(users.id, session.userId), eq(users.role, 'GENERAL_MANAGER'))
+      );
+    }
     return { user: adminUser || null };
   }
 
@@ -98,7 +114,11 @@ export const kingFishRouter = t.router({
 
     let adminUser;
     try {
-      [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+      if (isDemoMode || !hasDatabaseConfig) {
+        adminUser = demoAdminUser;
+      } else {
+        [adminUser] = await db.select().from(users).where(eq(users.role, 'GENERAL_MANAGER'));
+      }
     } catch (error) {
       console.error('Admin login database error:', error);
       throw new TRPCError({
@@ -133,6 +153,9 @@ export const kingFishRouter = t.router({
 
   // Global ERP foundation: tenant defaults, currencies and tax jurisdictions.
   getGlobalSettings: t.procedure.use(isAuthed).query(async ({ ctx }) => {
+    if (isDemoMode || !hasDatabaseConfig) {
+      return { organization: { id: 1, name: 'King Fish Co.', countryCode: 'EG', defaultCurrency: 'EGP', defaultLocale: 'ar', defaultTimeZone: 'Africa/Cairo', fiscalYearStartMonth: 1 }, branches: [], taxRates: [], currencies: [] };
+    }
     const [organization] = await db.select().from(organizations).where(eq(organizations.id, ctx.user.orgId));
     const organizationBranches = await db.select().from(branches).where(eq(branches.orgId, ctx.user.orgId));
     const organizationTaxRates = await db.select().from(taxRates).where(eq(taxRates.orgId, ctx.user.orgId));
@@ -169,6 +192,7 @@ export const kingFishRouter = t.router({
 
   // User Management
   listUsers: t.procedure.use(isAdmin).query(async ({ ctx }) => {
+    if (isDemoMode || !hasDatabaseConfig) return [demoAdminUser];
     return await db.select().from(users).where(eq(users.orgId, ctx.user.orgId));
   }),
 
@@ -293,6 +317,9 @@ export const kingFishRouter = t.router({
 
   // Dashboard Stats
   getDashboardStats: t.procedure.use(isAuthed).query(async ({ ctx }) => {
+    if (isDemoMode || !hasDatabaseConfig) {
+      return { totalLots: 0, totalWeight: 0, activeExports: 0, qualityAlerts: 0 };
+    }
     const [lotCount] = await db.select({ count: sql<number>`count(*)` }).from(lots).where(eq(lots.orgId, ctx.user.orgId));
     const [totalWeight] = await db.select({ sum: sql<number>`sum(weight)` }).from(lots).where(eq(lots.orgId, ctx.user.orgId));
     const [activeExports] = await db.select({ count: sql<number>`count(*)` }).from(shipments).where(and(eq(shipments.orgId, ctx.user.orgId), eq(shipments.status, 'IN_TRANSIT')));

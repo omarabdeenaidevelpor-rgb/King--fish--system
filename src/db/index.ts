@@ -2,6 +2,15 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as schema from './schema.ts';
 
+export const hasDatabaseConfig = Boolean(
+  process.env.DATABASE_URL ||
+  (process.env.SQL_HOST && process.env.SQL_USER && process.env.SQL_DB_NAME)
+);
+
+// Development/preview can run the admin shell without a provisioned database.
+// Production remains database-backed unless DEMO_MODE is explicitly enabled.
+export const isDemoMode = process.env.DEMO_MODE === 'true' || process.env.NODE_ENV !== 'production';
+
 declare global {
   var _postgresPool: Pool | undefined;
 }
