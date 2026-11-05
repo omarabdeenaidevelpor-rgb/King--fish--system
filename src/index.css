@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0A192F;
+  --color-accent: #C5A059;
+  --color-accent-light: #D4AF37;
+  --color-surface: #FCFCFD;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-slate-900 antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+.luxury-card {
+  @apply bg-white border border-slate-200/60 rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)];
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #C5A059 0%, #D4AF37 100%);
+}
+
+.navy-gradient {
+  background: linear-gradient(135deg, #0A192F 0%, #112240 100%);
+}
