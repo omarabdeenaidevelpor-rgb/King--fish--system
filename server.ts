@@ -34,6 +34,10 @@ async function startServer() {
   app.use(express.json());
   app.use('/uploads', express.static(path.resolve('public/uploads')));
 
+  app.get('/health', (_req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
   // File Upload Route
   app.post('/api/upload', upload.single('file'), async (req: any, res) => {
     try {
@@ -83,6 +87,14 @@ async function startServer() {
     })
   );
 
+  // Keep API failures JSON-shaped so clients never receive an empty response
+  // that becomes "Unexpected end of JSON input" in the login screen.
+  app.use((error: any, _req: any, res: any, next: any) => {
+    console.error('Unhandled API error:', error);
+    if (res.headersSent) return next(error);
+    res.status(500).json({ error: 'Internal server error' });
+  });
+
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static('dist'));
     app.get('*', (req, res) => {
@@ -107,4 +119,7 @@ async function startServer() {
   }
 }
 
-startServer().catch(console.error);
+startServer().catch((error) => {
+  console.error('Server startup failed:', error);
+  process.exit(1);
+});
