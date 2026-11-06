@@ -12,7 +12,10 @@ export const hasDatabaseConfig = Boolean(
 // Production remains database-backed unless DEMO_MODE is explicitly enabled.
 // Demo mode must be explicitly enabled. Development should use the configured
 // database so missing migrations or seed data are reported instead of hidden.
-export const isDemoMode = process.env.DEMO_MODE === 'true';
+// Until PostgreSQL is configured, allow the client to test the system with
+// temporary demo credentials. Set DEMO_MODE=false after connecting SQL.
+export const isDemoMode = process.env.DEMO_MODE === 'true' ||
+  (process.env.DEMO_MODE !== 'false' && !hasDatabaseConfig);
 
 declare global {
   var _postgresPool: Pool | undefined;

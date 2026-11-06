@@ -197,9 +197,13 @@ npm run dev
 🌐 Open the Application
 http://localhost:3000
 
-The seeded credentials are controlled by `ADMIN_USERNAME` and `ADMIN_PASSWORD` in
-`.env` (the defaults are `admin` and `admin123`). `DEMO_MODE` is `false` by
-default so a missing database, migration, or seed cannot be silently hidden.
+When SQL is not configured, the system automatically enables temporary demo mode
+with username `client_demo` and password `KingFish@Demo2026`. You can override
+these values with `DEMO_USERNAME` and `DEMO_PASSWORD`. This mode is only for the
+client review; do not use it for production data.
+
+After connecting PostgreSQL, run `npm run db:setup`, set `DEMO_MODE=false`, and
+use the `ADMIN_USERNAME` and `ADMIN_PASSWORD` credentials for the seeded admin.
 
 For production deployment, run `npm run build` followed by `npm start`. The
 `start` command serves the built frontend and the `/trpc` API from the same

@@ -106,8 +106,12 @@ export const kingFishRouter = t.router({
     username: z.string().min(1).max(100),
     password: z.string().min(1).max(200),
   })).mutation(async ({ input }) => {
-    const expectedUsername = process.env.ADMIN_USERNAME || 'admin';
-    const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const expectedUsername = isDemoMode
+      ? (process.env.DEMO_USERNAME || 'client_demo')
+      : (process.env.ADMIN_USERNAME || 'admin');
+    const expectedPassword = isDemoMode
+      ? (process.env.DEMO_PASSWORD || 'KingFish@Demo2026')
+      : (process.env.ADMIN_PASSWORD || 'admin123');
     if (input.username !== expectedUsername || input.password !== expectedPassword) {
       throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid credentials' });
     }

@@ -17,8 +17,8 @@ function getLoginErrorMessage(error: any, language: string) {
 export const LoginView = () => {
   const { t, i18n } = useTranslation();
   const { login, loginWithCredentials } = useAuth();
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [username, setUsername] = useState('client_demo');
+  const [password, setPassword] = useState('KingFish@Demo2026');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
