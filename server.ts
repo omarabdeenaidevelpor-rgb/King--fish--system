@@ -28,7 +28,8 @@ const upload = multer({ storage });
 
 async function startServer() {
   const app = express();
-  const port = 3000;
+  // Railway and similar hosts provide PORT dynamically. Keep 3000 for local use.
+  const port = Number(process.env.PORT || 3000);
 
   app.use(cors());
   app.use(express.json());
